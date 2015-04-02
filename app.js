@@ -5,7 +5,26 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var querystring = require('querystring');
+var nodemailer = require('nodemailer');
 
+// create reusable transporter object using SMTP transport
+var cnf = require('./am1r.config.js');
+var transporter = nodemailer.createTransport({
+    service: 'Gmail',
+    auth: {
+        user: cnf.username,
+        pass: cnf.password
+    }
+});
+console.log(cnf);
+var esc = function(html) {
+  return String(html)
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
 var app = express();
 
 // view engine setup
@@ -21,8 +40,18 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(function (req, res, next) {
-    res.send('<link rel="search" type="application/opensearchdescription+xml" href="http://am1r.me/opensearch.xml" title="am1r"/>'+
-              querystring.unescape(req.url.substr(1)));
+    var os = ('<link rel="search" type="application/opensearchdescription+xml" href="http://am1r.me/opensearch.xml" title="am1r"/>');
+    var msg = querystring.unescape(req.url.substr(1));
+    if (msg.trim() == '') {
+        res.send(os+'Say something to AMiR!');
+        return;
+    }
+    transporter.sendMail({
+        to: cnf.to,
+        subject: 'am1r.me ' + new Date(),
+        text: 'Someone said: ' + msg,
+    }, console.log);
+    res.send(os+'You said "' + esc(msg) + "' to AMiR!");
 });
 
 // catch 404 and forward to error handler
