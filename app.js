@@ -4,9 +4,7 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
-
-var routes = require('./routes/index');
-var users = require('./routes/users');
+var querystring = require('querystring');
 
 var app = express();
 
@@ -22,8 +20,10 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', routes);
-app.use('/users', users);
+app.use(function (req, res, next) {
+    res.send('<link rel="search" type="application/opensearchdescription+xml" href="http://am1r.me/opensearch.xml" title="am1r"/>'+
+              querystring.unescape(req.url.substr(1)));
+});
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
