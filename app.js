@@ -8,7 +8,7 @@ var querystring = require('querystring');
 var nodemailer = require('nodemailer');
 
 // create reusable transporter object using SMTP transport
-var cnf = require('./am1r.config.js');
+var cnf = require('../am1r.config.js');
 var transporter = nodemailer.createTransport({
     service: 'Gmail',
     auth: {
